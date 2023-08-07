@@ -1,5 +1,8 @@
 use miniquad::*;
 
+#[macro_use] extern crate log;
+use log::LevelFilter;
+
 #[repr(C)]
 struct Vertex {
     pos: [f32; 2],
@@ -19,7 +22,6 @@ struct Stage {
     font: fontdue::Font,
     show_king: bool,
     king_dim: (u16, u16),
-    keyb_shown: bool,
 }
 
 impl Stage {
@@ -140,17 +142,12 @@ impl Stage {
             font,
             show_king: true,
             king_dim: (width, height),
-            keyb_shown: false,
         }
     }
 }
 
 impl EventHandler for Stage {
     fn update(&mut self) {
-        if !self.keyb_shown && self.last_char == 'g' {
-            window::show_keyboard(true);
-            self.keyb_shown = true;
-        }
     }
 
     fn draw(&mut self) {
@@ -263,9 +260,7 @@ impl EventHandler for Stage {
             KeyCode::D => if modifiers.shift { self.last_char = 'd' } else { self.last_char = 'D' },
             KeyCode::E => if modifiers.shift { self.last_char = 'e' } else { self.last_char = 'E' },
             KeyCode::F => if modifiers.shift { self.last_char = 'f' } else { self.last_char = 'F' },
-            KeyCode::G => { if modifiers.shift { self.last_char = 'g' } else { self.last_char = 'G' }
-                self.keyb_shown = false;
-            }
+            KeyCode::G => if modifiers.shift { self.last_char = 'g' } else { self.last_char = 'G' },
             KeyCode::H => if modifiers.shift { self.last_char = 'h' } else { self.last_char = 'H' },
             KeyCode::I => if modifiers.shift { self.last_char = 'i' } else { self.last_char = 'I' },
             KeyCode::J => if modifiers.shift { self.last_char = 'j' } else { self.last_char = 'J' },
@@ -289,7 +284,7 @@ impl EventHandler for Stage {
             KeyCode::Enter => { self.last_char = ' '; self.show_king = false; },
             _ => {}
         }
-        println!("{:?}", keycode);
+        debug!("{:?}", keycode);
     }
     //fn mouse_motion_event(&mut self, x: f32, y: f32) {
     //    //println!("{} {}", x, y);
@@ -297,15 +292,42 @@ impl EventHandler for Stage {
     //fn mouse_wheel_event(&mut self, x: f32, y: f32) {
     //    println!("{} {}", x, y);
     //}
-    //fn mouse_button_down_event(&mut self, button: MouseButton, x: f32, y: f32) {
-    //    //println!("{:?} {} {}", button, x, y);
-    //}
+    fn mouse_button_down_event(&mut self, button: MouseButton, x: f32, y: f32) {
+        self.last_char = ' ';
+        self.show_king = true;
+        window::show_keyboard(true);
+        //println!("{:?} {} {}", button, x, y);
+    }
     //fn mouse_button_up_event(&mut self, button: MouseButton, x: f32, y: f32) {
     //    //println!("{:?} {} {}", button, x, y);
     //}
+
+    fn resize_event(&mut self, width: f32, height: f32) {
+        debug!("resize! {} {}", width, height);
+    }
 }
 
 fn main() {
+    #[cfg(target_os = "android")]
+    {
+        android_logger::init_once(
+            android_logger::Config::default()
+                .with_max_level(LevelFilter::Debug)
+                .with_tag("fagman")
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        let term_logger = simplelog::TermLogger::new(
+            simplelog::LevelFilter::Debug,
+            simplelog::Config::default(),
+            simplelog::TerminalMode::Mixed,
+            simplelog::ColorChoice::Auto,
+        );
+        simplelog::CombinedLogger::init(vec![term_logger]).expect("logger");
+    }
+
     /*
     let mut conf = conf::Conf::default();
     let metal = std::env::args().nth(1).as_deref() == Some("metal");
