@@ -1,6 +1,7 @@
 use miniquad::*;
 
-#[macro_use] extern crate log;
+#[macro_use]
+extern crate log;
 use log::LevelFilter;
 
 #[repr(C)]
@@ -28,6 +29,7 @@ impl Stage {
     pub fn new() -> Stage {
         let mut ctx: Box<dyn RenderingBackend> = window::new_rendering_backend();
 
+        /*
         let vertices: [Vertex; 4] = [
             Vertex {
                 pos: [-0.5, 0.5],
@@ -62,6 +64,7 @@ impl Stage {
             BufferUsage::Immutable,
             BufferSource::slice(&indices),
         );
+        */
 
         /*
         let pixels: [u8; 4 * 4 * 4] = [
@@ -80,14 +83,15 @@ impl Stage {
         let font = fontdue::Font::from_bytes(font, fontdue::FontSettings::default()).unwrap();
         let (metrics, text_bitmap) = font.rasterize('b', 256.0);
         let text_bitmap: Vec<_> = text_bitmap
-                    .iter()
-                    .flat_map(|coverage| vec![255, 255, 255, *coverage])
-                    .collect();
-        let texture = ctx.new_texture_from_rgba8(metrics.width as u16, metrics.height as u16, &text_bitmap);
+            .iter()
+            .flat_map(|coverage| vec![255, 255, 255, *coverage])
+            .collect();
+        let texture =
+            ctx.new_texture_from_rgba8(metrics.width as u16, metrics.height as u16, &text_bitmap);
 
-        let img = image::load_from_memory(
-            include_bytes!("../king.png")
-        ).unwrap().to_rgba8();
+        let img = image::load_from_memory(include_bytes!("../king.png"))
+            .unwrap()
+            .to_rgba8();
         let width = img.width() as u16;
         let height = img.height() as u16;
         let king_bitmap = img.into_raw();
@@ -127,7 +131,7 @@ impl Stage {
                 VertexAttribute::new("in_uv", VertexFormat::Float2),
             ],
             shader,
-            params
+            params,
         );
 
         Stage {
@@ -147,13 +151,12 @@ impl Stage {
 }
 
 impl EventHandler for Stage {
-    fn update(&mut self) {
-    }
+    fn update(&mut self) {}
 
+    // Only do drawing here. Apps might not call this when minimized.
     fn draw(&mut self) {
-        let vertices: [Vertex; 4] = 
-            if self.last_char == ' ' && !self.show_king {
-                [
+        let vertices: [Vertex; 4] = if self.last_char == ' ' && !self.show_king {
+            [
                 Vertex {
                     pos: [-0.5, 0.5],
                     color: [1., 0., 1., 1.],
@@ -175,8 +178,8 @@ impl EventHandler for Stage {
                     uv: [1., 1.],
                 },
             ]
-            } else {
-                [
+        } else {
+            [
                 Vertex {
                     pos: [-0.5, 0.5],
                     color: [1., 1., 1., 1.],
@@ -214,9 +217,9 @@ impl EventHandler for Stage {
 
         let (metrics, text_bitmap) = self.font.rasterize(self.last_char, 256.0);
         let text_bitmap: Vec<_> = text_bitmap
-                    .iter()
-                    .flat_map(|coverage| vec![255, 255, 255, *coverage])
-                    .collect();
+            .iter()
+            .flat_map(|coverage| vec![255, 255, 255, *coverage])
+            .collect();
 
         let texture = if self.last_char == ' ' {
             if self.show_king {
@@ -226,7 +229,11 @@ impl EventHandler for Stage {
                 self.white_texture
             }
         } else {
-            self.ctx.new_texture_from_rgba8(metrics.width as u16, metrics.height as u16, &text_bitmap)
+            self.ctx.new_texture_from_rgba8(
+                metrics.width as u16,
+                metrics.height as u16,
+                &text_bitmap,
+            )
         };
 
         let bindings = Bindings {
@@ -254,34 +261,40 @@ impl EventHandler for Stage {
             return;
         }
         match keycode {
-            KeyCode::A => if modifiers.shift { self.last_char = 'a' } else { self.last_char = 'A' },
-            KeyCode::B => if modifiers.shift { self.last_char = 'b' } else { self.last_char = 'B' },
-            KeyCode::C => if modifiers.shift { self.last_char = 'c' } else { self.last_char = 'C' },
-            KeyCode::D => if modifiers.shift { self.last_char = 'd' } else { self.last_char = 'D' },
-            KeyCode::E => if modifiers.shift { self.last_char = 'e' } else { self.last_char = 'E' },
-            KeyCode::F => if modifiers.shift { self.last_char = 'f' } else { self.last_char = 'F' },
-            KeyCode::G => if modifiers.shift { self.last_char = 'g' } else { self.last_char = 'G' },
-            KeyCode::H => if modifiers.shift { self.last_char = 'h' } else { self.last_char = 'H' },
-            KeyCode::I => if modifiers.shift { self.last_char = 'i' } else { self.last_char = 'I' },
-            KeyCode::J => if modifiers.shift { self.last_char = 'j' } else { self.last_char = 'J' },
-            KeyCode::K => if modifiers.shift { self.last_char = 'k' } else { self.last_char = 'K' },
-            KeyCode::L => if modifiers.shift { self.last_char = 'l' } else { self.last_char = 'L' },
-            KeyCode::M => if modifiers.shift { self.last_char = 'm' } else { self.last_char = 'M' },
-            KeyCode::N => if modifiers.shift { self.last_char = 'n' } else { self.last_char = 'N' },
-            KeyCode::O => if modifiers.shift { self.last_char = 'o' } else { self.last_char = 'O' },
-            KeyCode::P => if modifiers.shift { self.last_char = 'p' } else { self.last_char = 'P' },
-            KeyCode::Q => if modifiers.shift { self.last_char = 'q' } else { self.last_char = 'Q' },
-            KeyCode::R => if modifiers.shift { self.last_char = 'r' } else { self.last_char = 'R' },
-            KeyCode::S => if modifiers.shift { self.last_char = 's' } else { self.last_char = 'S' },
-            KeyCode::T => if modifiers.shift { self.last_char = 't' } else { self.last_char = 'T' },
-            KeyCode::U => if modifiers.shift { self.last_char = 'u' } else { self.last_char = 'U' },
-            KeyCode::V => if modifiers.shift { self.last_char = 'v' } else { self.last_char = 'V' },
-            KeyCode::W => if modifiers.shift { self.last_char = 'w' } else { self.last_char = 'W' },
-            KeyCode::X => if modifiers.shift { self.last_char = 'x' } else { self.last_char = 'X' },
-            KeyCode::Y => if modifiers.shift { self.last_char = 'y' } else { self.last_char = 'Y' },
-            KeyCode::Z => if modifiers.shift { self.last_char = 'z' } else { self.last_char = 'Z' },
-            KeyCode::Space => { self.last_char = ' '; self.show_king = true; },
-            KeyCode::Enter => { self.last_char = ' '; self.show_king = false; },
+            KeyCode::A => { if modifiers.shift { self.last_char = 'A' } else { self.last_char = 'a' } }
+            KeyCode::B => { if modifiers.shift { self.last_char = 'B' } else { self.last_char = 'b' } }
+            KeyCode::C => { if modifiers.shift { self.last_char = 'C' } else { self.last_char = 'c' } }
+            KeyCode::D => { if modifiers.shift { self.last_char = 'D' } else { self.last_char = 'd' } }
+            KeyCode::E => { if modifiers.shift { self.last_char = 'E' } else { self.last_char = 'e' } }
+            KeyCode::F => { if modifiers.shift { self.last_char = 'F' } else { self.last_char = 'f' } }
+            KeyCode::G => { if modifiers.shift { self.last_char = 'G' } else { self.last_char = 'g' } }
+            KeyCode::H => { if modifiers.shift { self.last_char = 'H' } else { self.last_char = 'h' } }
+            KeyCode::I => { if modifiers.shift { self.last_char = 'I' } else { self.last_char = 'i' } }
+            KeyCode::J => { if modifiers.shift { self.last_char = 'J' } else { self.last_char = 'j' } }
+            KeyCode::K => { if modifiers.shift { self.last_char = 'K' } else { self.last_char = 'k' } }
+            KeyCode::L => { if modifiers.shift { self.last_char = 'L' } else { self.last_char = 'l' } }
+            KeyCode::M => { if modifiers.shift { self.last_char = 'M' } else { self.last_char = 'm' } }
+            KeyCode::N => { if modifiers.shift { self.last_char = 'N' } else { self.last_char = 'n' } }
+            KeyCode::O => { if modifiers.shift { self.last_char = 'O' } else { self.last_char = 'o' } }
+            KeyCode::P => { if modifiers.shift { self.last_char = 'P' } else { self.last_char = 'p' } }
+            KeyCode::Q => { if modifiers.shift { self.last_char = 'Q' } else { self.last_char = 'q' } }
+            KeyCode::R => { if modifiers.shift { self.last_char = 'R' } else { self.last_char = 'r' } }
+            KeyCode::S => { if modifiers.shift { self.last_char = 'S' } else { self.last_char = 's' } }
+            KeyCode::T => { if modifiers.shift { self.last_char = 'T' } else { self.last_char = 't' } }
+            KeyCode::U => { if modifiers.shift { self.last_char = 'U' } else { self.last_char = 'u' } }
+            KeyCode::V => { if modifiers.shift { self.last_char = 'V' } else { self.last_char = 'v' } }
+            KeyCode::W => { if modifiers.shift { self.last_char = 'W' } else { self.last_char = 'w' } }
+            KeyCode::X => { if modifiers.shift { self.last_char = 'X' } else { self.last_char = 'x' } }
+            KeyCode::Y => { if modifiers.shift { self.last_char = 'Y' } else { self.last_char = 'y' } }
+            KeyCode::Z => { if modifiers.shift { self.last_char = 'Z' } else { self.last_char = 'z' } }
+            KeyCode::Space => {
+                self.last_char = ' ';
+                self.show_king = true;
+            }
+            KeyCode::Enter => {
+                self.last_char = ' ';
+                self.show_king = false;
+            }
             _ => {}
         }
         debug!("{:?}", keycode);
@@ -313,7 +326,7 @@ fn main() {
         android_logger::init_once(
             android_logger::Config::default()
                 .with_max_level(LevelFilter::Debug)
-                .with_tag("fagman")
+                .with_tag("fagman"),
         );
     }
 
@@ -343,7 +356,7 @@ fn main() {
         miniquad::conf::Conf {
             window_resizable: true,
             platform: miniquad::conf::Platform {
-                linux_backend: miniquad::conf::LinuxBackend::WaylandOnly,
+                linux_backend: miniquad::conf::LinuxBackend::WaylandWithX11Fallback,
                 wayland_use_fallback_decorations: false,
                 ..Default::default()
             },
@@ -427,4 +440,3 @@ mod shader {
         }
     }
 }
-
