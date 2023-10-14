@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Fagman
+Exec=/usr/bin/fagman
+Icon=/usr/share/icons/hicolor/48x48/icon.png
+Terminal=true
+Type=Application
+Categories=Utility;Application;
+
