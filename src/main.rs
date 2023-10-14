@@ -202,6 +202,7 @@ impl EventHandler for Stage {
                 },
             ]
         };
+        //debug!("screen size: {:?}", window::screen_size());
         let vertex_buffer = self.ctx.new_buffer(
             BufferType::VertexBuffer,
             BufferUsage::Immutable,
@@ -354,6 +355,7 @@ fn main() {
     */
     miniquad::start(
         miniquad::conf::Conf {
+            high_dpi: true,
             window_resizable: true,
             platform: miniquad::conf::Platform {
                 linux_backend: miniquad::conf::LinuxBackend::WaylandWithX11Fallback,
