@@ -103,16 +103,16 @@ impl Stage {
         //    images: vec![texture],
         //};
 
+
         let shader = ctx
-            .new_shader(
-                ShaderSource {
-                    glsl_vertex: Some(shader::GL_VERTEX),
-                    glsl_fragment: Some(shader::GL_FRAGMENT),
-                    metal_shader: Some(shader::METAL),
-                },
-                shader::meta(),
-            )
-            .unwrap();
+    .new_shader(
+        ShaderSource::Glsl { vertex: shader::GL_VERTEX, fragment: shader::GL_FRAGMENT },
+        shader::meta(),
+    )
+    .unwrap();
+
+    
+
 
         let params = PipelineParams {
             color_blend: Some(BlendState::new(
