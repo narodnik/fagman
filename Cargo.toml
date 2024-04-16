@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 #miniquad = "0.4.0-alpha"
 miniquad = { git = "https://github.com/not-fl3/miniquad" }
-fontdue = "0.5.2"
+fontdue = "0.7"
 image = "0.24"
 log = "0.4.19"
 

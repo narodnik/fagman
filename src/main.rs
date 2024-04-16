@@ -12,9 +12,9 @@ struct Vertex {
 }
 
 struct Stage {
+    ctx: Box<dyn RenderingBackend>,
     pipeline: Pipeline,
     //bindings: Bindings,
-    ctx: Box<dyn RenderingBackend>,
     white_texture: TextureId,
     text_bitmap: Vec<u8>,
     king_bitmap: Vec<u8>,
@@ -103,16 +103,20 @@ impl Stage {
         //    images: vec![texture],
         //};
 
-
         let shader = ctx
-    .new_shader(
-        ShaderSource::Glsl { vertex: shader::GL_VERTEX, fragment: shader::GL_FRAGMENT },
-        shader::meta(),
-    )
-    .unwrap();
-
-    
-
+            .new_shader(
+                match ctx.info().backend {
+                    Backend::OpenGl => ShaderSource::Glsl {
+                        vertex: shader::GL_VERTEX,
+                        fragment: shader::GL_FRAGMENT,
+                    },
+                    Backend::Metal => ShaderSource::Msl {
+                        program: shader::METAL,
+                    },
+                },
+                shader::meta(),
+            )
+            .unwrap();
 
         let params = PipelineParams {
             color_blend: Some(BlendState::new(
@@ -262,32 +266,188 @@ impl EventHandler for Stage {
             return;
         }
         match keycode {
-            KeyCode::A => { if modifiers.shift { self.last_char = 'A' } else { self.last_char = 'a' } }
-            KeyCode::B => { if modifiers.shift { self.last_char = 'B' } else { self.last_char = 'b' } }
-            KeyCode::C => { if modifiers.shift { self.last_char = 'C' } else { self.last_char = 'c' } }
-            KeyCode::D => { if modifiers.shift { self.last_char = 'D' } else { self.last_char = 'd' } }
-            KeyCode::E => { if modifiers.shift { self.last_char = 'E' } else { self.last_char = 'e' } }
-            KeyCode::F => { if modifiers.shift { self.last_char = 'F' } else { self.last_char = 'f' } }
-            KeyCode::G => { if modifiers.shift { self.last_char = 'G' } else { self.last_char = 'g' } }
-            KeyCode::H => { if modifiers.shift { self.last_char = 'H' } else { self.last_char = 'h' } }
-            KeyCode::I => { if modifiers.shift { self.last_char = 'I' } else { self.last_char = 'i' } }
-            KeyCode::J => { if modifiers.shift { self.last_char = 'J' } else { self.last_char = 'j' } }
-            KeyCode::K => { if modifiers.shift { self.last_char = 'K' } else { self.last_char = 'k' } }
-            KeyCode::L => { if modifiers.shift { self.last_char = 'L' } else { self.last_char = 'l' } }
-            KeyCode::M => { if modifiers.shift { self.last_char = 'M' } else { self.last_char = 'm' } }
-            KeyCode::N => { if modifiers.shift { self.last_char = 'N' } else { self.last_char = 'n' } }
-            KeyCode::O => { if modifiers.shift { self.last_char = 'O' } else { self.last_char = 'o' } }
-            KeyCode::P => { if modifiers.shift { self.last_char = 'P' } else { self.last_char = 'p' } }
-            KeyCode::Q => { if modifiers.shift { self.last_char = 'Q' } else { self.last_char = 'q' } }
-            KeyCode::R => { if modifiers.shift { self.last_char = 'R' } else { self.last_char = 'r' } }
-            KeyCode::S => { if modifiers.shift { self.last_char = 'S' } else { self.last_char = 's' } }
-            KeyCode::T => { if modifiers.shift { self.last_char = 'T' } else { self.last_char = 't' } }
-            KeyCode::U => { if modifiers.shift { self.last_char = 'U' } else { self.last_char = 'u' } }
-            KeyCode::V => { if modifiers.shift { self.last_char = 'V' } else { self.last_char = 'v' } }
-            KeyCode::W => { if modifiers.shift { self.last_char = 'W' } else { self.last_char = 'w' } }
-            KeyCode::X => { if modifiers.shift { self.last_char = 'X' } else { self.last_char = 'x' } }
-            KeyCode::Y => { if modifiers.shift { self.last_char = 'Y' } else { self.last_char = 'y' } }
-            KeyCode::Z => { if modifiers.shift { self.last_char = 'Z' } else { self.last_char = 'z' } }
+            KeyCode::A => {
+                if modifiers.shift {
+                    self.last_char = 'A'
+                } else {
+                    self.last_char = 'a'
+                }
+            }
+            KeyCode::B => {
+                if modifiers.shift {
+                    self.last_char = 'B'
+                } else {
+                    self.last_char = 'b'
+                }
+            }
+            KeyCode::C => {
+                if modifiers.shift {
+                    self.last_char = 'C'
+                } else {
+                    self.last_char = 'c'
+                }
+            }
+            KeyCode::D => {
+                if modifiers.shift {
+                    self.last_char = 'D'
+                } else {
+                    self.last_char = 'd'
+                }
+            }
+            KeyCode::E => {
+                if modifiers.shift {
+                    self.last_char = 'E'
+                } else {
+                    self.last_char = 'e'
+                }
+            }
+            KeyCode::F => {
+                if modifiers.shift {
+                    self.last_char = 'F'
+                } else {
+                    self.last_char = 'f'
+                }
+            }
+            KeyCode::G => {
+                if modifiers.shift {
+                    self.last_char = 'G'
+                } else {
+                    self.last_char = 'g'
+                }
+            }
+            KeyCode::H => {
+                if modifiers.shift {
+                    self.last_char = 'H'
+                } else {
+                    self.last_char = 'h'
+                }
+            }
+            KeyCode::I => {
+                if modifiers.shift {
+                    self.last_char = 'I'
+                } else {
+                    self.last_char = 'i'
+                }
+            }
+            KeyCode::J => {
+                if modifiers.shift {
+                    self.last_char = 'J'
+                } else {
+                    self.last_char = 'j'
+                }
+            }
+            KeyCode::K => {
+                if modifiers.shift {
+                    self.last_char = 'K'
+                } else {
+                    self.last_char = 'k'
+                }
+            }
+            KeyCode::L => {
+                if modifiers.shift {
+                    self.last_char = 'L'
+                } else {
+                    self.last_char = 'l'
+                }
+            }
+            KeyCode::M => {
+                if modifiers.shift {
+                    self.last_char = 'M'
+                } else {
+                    self.last_char = 'm'
+                }
+            }
+            KeyCode::N => {
+                if modifiers.shift {
+                    self.last_char = 'N'
+                } else {
+                    self.last_char = 'n'
+                }
+            }
+            KeyCode::O => {
+                if modifiers.shift {
+                    self.last_char = 'O'
+                } else {
+                    self.last_char = 'o'
+                }
+            }
+            KeyCode::P => {
+                if modifiers.shift {
+                    self.last_char = 'P'
+                } else {
+                    self.last_char = 'p'
+                }
+            }
+            KeyCode::Q => {
+                if modifiers.shift {
+                    self.last_char = 'Q'
+                } else {
+                    self.last_char = 'q'
+                }
+            }
+            KeyCode::R => {
+                if modifiers.shift {
+                    self.last_char = 'R'
+                } else {
+                    self.last_char = 'r'
+                }
+            }
+            KeyCode::S => {
+                if modifiers.shift {
+                    self.last_char = 'S'
+                } else {
+                    self.last_char = 's'
+                }
+            }
+            KeyCode::T => {
+                if modifiers.shift {
+                    self.last_char = 'T'
+                } else {
+                    self.last_char = 't'
+                }
+            }
+            KeyCode::U => {
+                if modifiers.shift {
+                    self.last_char = 'U'
+                } else {
+                    self.last_char = 'u'
+                }
+            }
+            KeyCode::V => {
+                if modifiers.shift {
+                    self.last_char = 'V'
+                } else {
+                    self.last_char = 'v'
+                }
+            }
+            KeyCode::W => {
+                if modifiers.shift {
+                    self.last_char = 'W'
+                } else {
+                    self.last_char = 'w'
+                }
+            }
+            KeyCode::X => {
+                if modifiers.shift {
+                    self.last_char = 'X'
+                } else {
+                    self.last_char = 'x'
+                }
+            }
+            KeyCode::Y => {
+                if modifiers.shift {
+                    self.last_char = 'Y'
+                } else {
+                    self.last_char = 'y'
+                }
+            }
+            KeyCode::Z => {
+                if modifiers.shift {
+                    self.last_char = 'Z'
+                } else {
+                    self.last_char = 'z'
+                }
+            }
             KeyCode::Space => {
                 self.last_char = ' ';
                 self.show_king = true;
@@ -342,8 +502,16 @@ fn main() {
         simplelog::CombinedLogger::init(vec![term_logger]).expect("logger");
     }
 
-    /*
-    let mut conf = conf::Conf::default();
+    let mut conf = miniquad::conf::Conf {
+        high_dpi: true,
+        window_resizable: true,
+        platform: miniquad::conf::Platform {
+            linux_backend: miniquad::conf::LinuxBackend::WaylandWithX11Fallback,
+            wayland_use_fallback_decorations: false,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
     let metal = std::env::args().nth(1).as_deref() == Some("metal");
     conf.platform.apple_gfx_api = if metal {
         conf::AppleGfxApi::Metal
@@ -351,24 +519,10 @@ fn main() {
         conf::AppleGfxApi::OpenGl
     };
 
-    miniquad::start(conf, move || Box::new(Stage::new()));
-    */
-    miniquad::start(
-        miniquad::conf::Conf {
-            high_dpi: true,
-            window_resizable: true,
-            platform: miniquad::conf::Platform {
-                linux_backend: miniquad::conf::LinuxBackend::WaylandWithX11Fallback,
-                wayland_use_fallback_decorations: false,
-                ..Default::default()
-            },
-            ..Default::default()
-        },
-        || {
-            window::show_keyboard(true);
-            Box::new(Stage::new())
-        },
-    );
+    miniquad::start(conf, || {
+        window::show_keyboard(true);
+        Box::new(Stage::new())
+    });
 }
 
 mod shader {
