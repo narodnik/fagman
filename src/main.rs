@@ -163,29 +163,39 @@ impl EventHandler for Stage {
     fn draw(&mut self) {
         let (screen_width, screen_height) = window::screen_size();
 
-        // (-1, 1) ------ (1, 1)
-        //    |              |
-        //    |              |
-        //    |              |
-        //    |              |
-        // (-1, -1) ----- (1, -1)
+        // Polygons must have counter-clockwise orientation
+
+        //    0             1
+        // (-1, 1) ----- (1, 1)
+        //    |          /  |
+        //    |        /    |
+        //    |      /      |
+        //    |    /        |
+        // (-1, -1) ---- (1, -1)
+        //    2             3
+        //
+        // faces: 021, 123
         let vertices: [Vertex; 4] = if self.last_char == ' ' && !self.show_king {
             [
+                // top left
                 Vertex {
                     pos: [-0.5, 0.5],
                     color: [1., 0., 1., 1.],
                     uv: [0., 0.],
                 },
+                // top right
                 Vertex {
                     pos: [0.5, 0.5],
                     color: [1., 1., 0., 1.],
                     uv: [1., 0.],
                 },
+                // bottom left
                 Vertex {
                     pos: [-0.5, -0.5],
                     color: [0., 0., 0.8, 1.],
                     uv: [0., 1.],
                 },
+                // bottom right
                 Vertex {
                     pos: [0.5, -0.5],
                     color: [1., 1., 0., 1.],
@@ -232,7 +242,7 @@ impl EventHandler for Stage {
             BufferSource::slice(&vertices),
         );
 
-        let indices: [u16; 6] = [0, 1, 2, 1, 2, 3];
+        let indices: [u16; 6] = [0, 2, 1, 1, 2, 3];
         let index_buffer = self.ctx.new_buffer(
             BufferType::IndexBuffer,
             BufferUsage::Immutable,
