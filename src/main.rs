@@ -23,6 +23,7 @@ struct Stage {
     font: fontdue::Font,
     show_king: bool,
     king_dim: (u16, u16),
+    font_dim: (usize, usize),
 }
 
 impl Stage {
@@ -150,6 +151,7 @@ impl Stage {
             font,
             show_king: true,
             king_dim: (width, height),
+            font_dim: (metrics.width.into(), metrics.height.into())
         }
     }
 }
@@ -159,6 +161,14 @@ impl EventHandler for Stage {
 
     // Only do drawing here. Apps might not call this when minimized.
     fn draw(&mut self) {
+        let (screen_width, screen_height) = window::screen_size();
+
+        // (-1, 1) ------ (1, 1)
+        //    |              |
+        //    |              |
+        //    |              |
+        //    |              |
+        // (-1, -1) ----- (1, -1)
         let vertices: [Vertex; 4] = if self.last_char == ' ' && !self.show_king {
             [
                 Vertex {
@@ -183,6 +193,15 @@ impl EventHandler for Stage {
                 },
             ]
         } else {
+            let (img_width, img_height) = if self.last_char == ' ' && self.show_king {
+                (self.king_dim.0 as f32, self.king_dim.1 as f32)
+            } else {
+                (self.font_dim.0 as f32, self.font_dim.1 as f32)
+            };
+            let scale = 4.0;
+            let width = scale * img_width / screen_width;
+            let height = scale * img_height / screen_height;
+
             [
                 Vertex {
                     pos: [-0.5, 0.5],
@@ -190,17 +209,17 @@ impl EventHandler for Stage {
                     uv: [0., 0.],
                 },
                 Vertex {
-                    pos: [0.5, 0.5],
+                    pos: [-0.5 + width, 0.5],
                     color: [1., 1., 1., 1.],
                     uv: [1., 0.],
                 },
                 Vertex {
-                    pos: [-0.5, -0.5],
+                    pos: [-0.5, 0.5 - height],
                     color: [1., 1., 1., 1.],
                     uv: [0., 1.],
                 },
                 Vertex {
-                    pos: [0.5, -0.5],
+                    pos: [-0.5 + width, 0.5 - height],
                     color: [1., 1., 1., 1.],
                     uv: [1., 1.],
                 },
