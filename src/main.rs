@@ -23,7 +23,6 @@ struct Stage {
     font: fontdue::Font,
     show_king: bool,
     king_dim: (u16, u16),
-    font_dim: (usize, usize),
 }
 
 impl Stage {
@@ -80,15 +79,15 @@ impl Stage {
 
         let white_texture = ctx.new_texture_from_rgba8(1, 1, &[255, 255, 255, 255]);
 
-        let font = include_bytes!("../ProggyClean.ttf") as &[u8];
+        let font = include_bytes!("../InterVariable.ttf") as &[u8];
         let font = fontdue::Font::from_bytes(font, fontdue::FontSettings::default()).unwrap();
         let (metrics, text_bitmap) = font.rasterize('b', 256.0);
         let text_bitmap: Vec<_> = text_bitmap
             .iter()
             .flat_map(|coverage| vec![255, 255, 255, *coverage])
             .collect();
-        let texture =
-            ctx.new_texture_from_rgba8(metrics.width as u16, metrics.height as u16, &text_bitmap);
+        //let texture =
+        //    ctx.new_texture_from_rgba8(metrics.width as u16, metrics.height as u16, &text_bitmap);
 
         let img = image::load_from_memory(include_bytes!("../king.png"))
             .unwrap()
@@ -151,7 +150,6 @@ impl Stage {
             font,
             show_king: true,
             king_dim: (width, height),
-            font_dim: (metrics.width.into(), metrics.height.into())
         }
     }
 }
@@ -164,6 +162,12 @@ impl EventHandler for Stage {
         let (screen_width, screen_height) = window::screen_size();
 
         // Polygons must have counter-clockwise orientation
+
+        let (font_metrics, text_bitmap) = self.font.rasterize(self.last_char, 256.0);
+        let text_bitmap: Vec<_> = text_bitmap
+            .iter()
+            .flat_map(|coverage| vec![255, 255, 255, *coverage])
+            .collect();
 
         //    0             1
         // (-1, 1) ----- (1, 1)
@@ -206,7 +210,7 @@ impl EventHandler for Stage {
             let (img_width, img_height) = if self.last_char == ' ' && self.show_king {
                 (self.king_dim.0 as f32, self.king_dim.1 as f32)
             } else {
-                (self.font_dim.0 as f32, self.font_dim.1 as f32)
+                (font_metrics.width as f32, font_metrics.height as f32)
             };
             let scale = 4.0;
             let width = scale * img_width / screen_width;
@@ -249,12 +253,6 @@ impl EventHandler for Stage {
             BufferSource::slice(&indices),
         );
 
-        let (metrics, text_bitmap) = self.font.rasterize(self.last_char, 256.0);
-        let text_bitmap: Vec<_> = text_bitmap
-            .iter()
-            .flat_map(|coverage| vec![255, 255, 255, *coverage])
-            .collect();
-
         let texture = if self.last_char == ' ' {
             if self.show_king {
                 let (width, height) = self.king_dim;
@@ -264,8 +262,8 @@ impl EventHandler for Stage {
             }
         } else {
             self.ctx.new_texture_from_rgba8(
-                metrics.width as u16,
-                metrics.height as u16,
+                font_metrics.width as u16,
+                font_metrics.height as u16,
                 &text_bitmap,
             )
         };
