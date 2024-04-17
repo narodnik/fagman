@@ -127,7 +127,7 @@ impl Stage {
             ..Default::default()
         };
 
-        let pipeline = ctx.new_pipeline_with_params(
+        let pipeline = ctx.new_pipeline(
             &[BufferLayout::default()],
             &[
                 VertexAttribute::new("in_pos", VertexFormat::Float2),
@@ -247,9 +247,10 @@ impl EventHandler for Stage {
             images: vec![texture],
         };
 
-        let clear = PassAction::clear_color(0., 1., 0., 1.);
-        self.ctx.begin_default_pass(clear);
-        self.ctx.end_render_pass();
+        // This isn't needed?
+        //let clear = PassAction::clear_color(0., 1., 0., 1.);
+        //self.ctx.begin_default_pass(clear);
+        //self.ctx.end_render_pass();
 
         self.ctx.begin_default_pass(Default::default());
 
