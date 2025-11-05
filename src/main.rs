@@ -1,9 +1,5 @@
 use miniquad::*;
 
-#[macro_use]
-extern crate log;
-use log::LevelFilter;
-
 #[repr(C)]
 struct Vertex {
     pos: [f32; 2],
@@ -486,7 +482,7 @@ impl EventHandler for Stage {
             }
             _ => {}
         }
-        debug!("{:?}", keycode);
+        //debug!("{:?}", keycode);
     }
     //fn mouse_motion_event(&mut self, x: f32, y: f32) {
     //    //println!("{} {}", x, y);
@@ -505,47 +501,25 @@ impl EventHandler for Stage {
     //}
 
     fn resize_event(&mut self, width: f32, height: f32) {
-        debug!("resize! {} {}", width, height);
+        //debug!("resize! {} {}", width, height);
     }
 }
 
 fn main() {
-    #[cfg(target_os = "android")]
-    {
-        android_logger::init_once(
-            android_logger::Config::default()
-                .with_max_level(LevelFilter::Debug)
-                .with_tag("fagman"),
-        );
-    }
-
-    #[cfg(target_os = "linux")]
-    {
-        let term_logger = simplelog::TermLogger::new(
-            simplelog::LevelFilter::Debug,
-            simplelog::Config::default(),
-            simplelog::TerminalMode::Mixed,
-            simplelog::ColorChoice::Auto,
-        );
-        simplelog::CombinedLogger::init(vec![term_logger]).expect("logger");
-    }
-
     let mut conf = miniquad::conf::Conf {
+        window_title: "DarkFi".to_string(),
         high_dpi: true,
         window_resizable: true,
         platform: miniquad::conf::Platform {
             linux_backend: miniquad::conf::LinuxBackend::WaylandWithX11Fallback,
-            wayland_use_fallback_decorations: false,
+            android_panic_hook: false,
             ..Default::default()
         },
         ..Default::default()
     };
     let metal = std::env::args().nth(1).as_deref() == Some("metal");
-    conf.platform.apple_gfx_api = if metal {
-        conf::AppleGfxApi::Metal
-    } else {
-        conf::AppleGfxApi::OpenGl
-    };
+    conf.platform.apple_gfx_api =
+        if metal { conf::AppleGfxApi::Metal } else { conf::AppleGfxApi::OpenGl };
 
     miniquad::start(conf, || {
         window::show_keyboard(true);

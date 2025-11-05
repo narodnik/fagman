@@ -3,22 +3,8 @@ name = "fagman"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-#miniquad = "0.4.0-alpha"
 miniquad = { git = "https://github.com/not-fl3/miniquad" }
 fontdue = "0.7"
 image = "0.24"
-log = "0.4.19"
-
-[target.'cfg(target_os = "android")'.dependencies]
-android_logger = "0.13"
-
-[target.'cfg(target_os = "linux")'.dependencies]
-simplelog = "0.12.1"
-
-[package.metadata.android.activity_attributes]
-"android:exported" = "true"
-"android:windowSoftInputMode" = "adjustResize"
 
