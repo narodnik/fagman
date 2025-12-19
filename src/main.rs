@@ -1,5 +1,7 @@
 use miniquad::*;
 
+mod shader;
+
 #[repr(C)]
 struct Vertex {
     pos: [f32; 2],
@@ -99,6 +101,16 @@ impl Stage {
         //    images: vec![texture],
         //};
 
+        let mut shader_meta: ShaderMeta = shader::meta();
+        shader_meta
+            .uniforms
+            .uniforms
+            .push(UniformDesc::new("Projection", UniformType::Mat4));
+        shader_meta
+            .uniforms
+            .uniforms
+            .push(UniformDesc::new("Model", UniformType::Mat4));
+
         let shader = ctx
             .new_shader(
                 match ctx.info().backend {
@@ -110,7 +122,7 @@ impl Stage {
                         program: shader::METAL,
                     },
                 },
-                shader::meta(),
+                shader_meta,
             )
             .unwrap();
 
@@ -166,12 +178,12 @@ impl EventHandler for Stage {
             .collect();
 
         //    0             1
-        // (-1, 1) ----- (1, 1)
-        //    |          /  |
-        //    |        /    |
-        //    |      /      |
-        //    |    /        |
-        // (-1, -1) ---- (1, -1)
+        // (0, 0) ------ (0, 1)
+        //   |          /  |
+        //   |        /    |
+        //   |      /      |
+        //   |    /        |
+        // (0, 1) ------ (1, 1)
         //    2             3
         //
         // faces: 021, 123
@@ -179,25 +191,25 @@ impl EventHandler for Stage {
             [
                 // top left
                 Vertex {
-                    pos: [-0.5, 0.5],
+                    pos: [0.25, 0.25],
                     color: [1., 0., 1., 1.],
                     uv: [0., 0.],
                 },
                 // top right
                 Vertex {
-                    pos: [0.5, 0.5],
+                    pos: [0.75, 0.25],
                     color: [1., 1., 0., 1.],
                     uv: [1., 0.],
                 },
                 // bottom left
                 Vertex {
-                    pos: [-0.5, -0.5],
+                    pos: [0.25, 0.75],
                     color: [0., 0., 0.8, 1.],
                     uv: [0., 1.],
                 },
                 // bottom right
                 Vertex {
-                    pos: [0.5, -0.5],
+                    pos: [0.75, 0.75],
                     color: [1., 1., 0., 1.],
                     uv: [1., 1.],
                 },
@@ -214,22 +226,22 @@ impl EventHandler for Stage {
 
             [
                 Vertex {
-                    pos: [-0.5, 0.5],
+                    pos: [0.25, 0.25],
                     color: [1., 1., 1., 1.],
                     uv: [0., 0.],
                 },
                 Vertex {
-                    pos: [-0.5 + width, 0.5],
+                    pos: [0.25 + width, 0.25],
                     color: [1., 1., 1., 1.],
                     uv: [1., 0.],
                 },
                 Vertex {
-                    pos: [-0.5, 0.5 - height],
+                    pos: [0.25, 0.25 + height],
                     color: [1., 1., 1., 1.],
                     uv: [0., 1.],
                 },
                 Vertex {
-                    pos: [-0.5 + width, 0.5 - height],
+                    pos: [0.25 + width, 0.25 + height],
                     color: [1., 1., 1., 1.],
                     uv: [1., 1.],
                 },
@@ -270,14 +282,33 @@ impl EventHandler for Stage {
             images: vec![texture],
         };
 
-        // This isn't needed?
-        //let clear = PassAction::clear_color(0., 1., 0., 1.);
-        //self.ctx.begin_default_pass(clear);
-        //self.ctx.end_render_pass();
-
-        self.ctx.begin_default_pass(Default::default());
+        //self.ctx.begin_default_pass(Default::default());
+        self.ctx
+            .begin_default_pass(PassAction::clear_color(0., 0., 0., 1.));
 
         self.ctx.apply_pipeline(&self.pipeline);
+
+        // This will make the top left (0, 0) and the bottom right (1, 1)
+        // Default is (-1, 1) -> (1, -1)
+        let proj = glam::Mat4::from_translation(glam::Vec3::new(-1., 1., 0.))
+            * glam::Mat4::from_scale(glam::Vec3::new(2., -2., 1.));
+
+        let mut uniforms_data = [0u8; 128];
+        let data: [u8; 64] = unsafe { std::mem::transmute_copy(&proj) };
+        uniforms_data[0..64].copy_from_slice(&data);
+
+        let (off_x, off_y) = (0., 0.);
+        //let scale_w = 1. / screen_width;
+        //let scale_h = 1. / screen_height;
+        let (scale_w, scale_h) = (1., 1.);
+        let model = glam::Mat4::from_translation(glam::Vec3::new(off_x, off_y, 0.))
+            * glam::Mat4::from_scale(glam::Vec3::new(scale_w, scale_h, 1.));
+
+        let data: [u8; 64] = unsafe { std::mem::transmute_copy(&model) };
+        uniforms_data[64..].copy_from_slice(&data);
+        self.ctx
+            .apply_uniforms_from_bytes(uniforms_data.as_ptr(), uniforms_data.len());
+
         self.ctx.apply_bindings(&bindings);
         self.ctx.draw(0, 6, 1);
         self.ctx.end_render_pass();
@@ -518,83 +549,14 @@ fn main() {
         ..Default::default()
     };
     let metal = std::env::args().nth(1).as_deref() == Some("metal");
-    conf.platform.apple_gfx_api =
-        if metal { conf::AppleGfxApi::Metal } else { conf::AppleGfxApi::OpenGl };
+    conf.platform.apple_gfx_api = if metal {
+        conf::AppleGfxApi::Metal
+    } else {
+        conf::AppleGfxApi::OpenGl
+    };
 
     miniquad::start(conf, || {
         window::show_keyboard(true);
         Box::new(Stage::new())
     });
-}
-
-mod shader {
-    use miniquad::*;
-
-    pub const GL_VERTEX: &str = r#"#version 100
-    attribute vec2 in_pos;
-    attribute vec4 in_color;
-    attribute vec2 in_uv;
-
-    varying lowp vec4 color;
-    varying lowp vec2 uv;
-
-    void main() {
-        gl_Position = vec4(in_pos, 0, 1);
-        color = in_color;
-        uv = in_uv;
-    }"#;
-
-    pub const GL_FRAGMENT: &str = r#"#version 100
-    varying lowp vec4 color;
-    varying lowp vec2 uv;
-
-    uniform sampler2D tex;
-
-    void main() {
-        gl_FragColor = color * texture2D(tex, uv);
-    }"#;
-
-    pub const METAL: &str = r#"
-    #include <metal_stdlib>
-
-    using namespace metal;
-
-    struct Vertex
-    {
-        float2 in_pos   [[attribute(0)]];
-        float4 in_color [[attribute(1)]];
-        float2 in_uv    [[attribute(2)]];
-    };
-
-    struct RasterizerData
-    {
-        float4 position [[position]];
-        float4 color [[user(locn0)]];
-        float2 uv [[user(locn1)]];
-    };
-
-    vertex RasterizerData vertexShader(Vertex v [[stage_in]])
-    {
-        RasterizerData out;
-
-        out.position = float4(v.in_pos.xy, 0.0, 1.0);
-        out.color = v.in_color;
-        out.uv = v.texcoord;
-
-        return out;
-    }
-
-    fragment float4 fragmentShader(RasterizerData in [[stage_in]], texture2d<float> tex [[texture(0)]], sampler texSmplr [[sampler(0)]])
-    {
-        return in.color * tex.sample(texSmplr, in.uv);
-    }
-
-    "#;
-
-    pub fn meta() -> ShaderMeta {
-        ShaderMeta {
-            images: vec!["tex".to_string()],
-            uniforms: UniformBlockLayout { uniforms: vec![] },
-        }
-    }
 }
