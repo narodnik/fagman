@@ -1,5 +1,5 @@
 [package]
-name = "fagman"
+name = "fagman-app"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,4 +7,12 @@ edition = "2021"
 miniquad = { git = "https://github.com/not-fl3/miniquad" }
 fontdue = "0.7"
 image = "0.24"
+
+[package.metadata.android.activity_attributes]
+"android:exported" = "true"
+"android:windowSoftInputMode" = "adjustResize"
+
+[package.metadata.android]
+package_name = "fagman.fagman-app"
+label = "FAGMAN"
 

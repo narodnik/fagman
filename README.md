@@ -10,6 +10,11 @@ cargo run
 
 # Android APK
 
+```
+podman build -t apk .
+make
+```
+
 See the [Android build instructions](https://github.com/not-fl3/miniquad#android) on the miniquad README.
 
 Uses [cargo-quad-apk](https://github.com/not-fl3/cargo-quad-apk).
